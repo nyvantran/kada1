@@ -24,6 +24,8 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "docker:up": "docker compose up -d",
+    "docker:infra": "docker compose up postgres redis redis-commander -d",
+    "docker:build": "docker compose up -d --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f"
   },
