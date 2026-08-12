@@ -74,6 +74,7 @@ async function bootstrap() {
     .addTag('Health', 'Health and system diagnostics')
     .addTag('Users', 'User management and caching operations')
     .addTag('Posts', 'Post publication and relational data')
+    .addTag('Statistics', 'Application statistics and recent activity')
     .addBearerAuth()
     .build();
 

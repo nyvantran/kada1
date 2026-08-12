@@ -6,6 +6,7 @@ import { RedisModule } from './redis/redis.module.js';
 import { UsersModule } from './users/users.module.js';
 import { PostsModule } from './posts/posts.module.js';
 import { HealthModule } from './health/health.module.js';
+import { StatisticsModule } from './statistics/statistics.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
@@ -18,6 +19,7 @@ import { AppService } from './app.service.js';
     PrismaModule,
     RedisModule,
     HealthModule,
+    StatisticsModule,
     UsersModule,
     PostsModule,
   ],

@@ -122,6 +122,13 @@ npm run start:prod
 | `PATCH` | `/api/v1/posts/:id` | Cập nhật bài viết |
 | `DELETE` | `/api/v1/posts/:id` | Xoá bài viết |
 
+### 📊 Statistics
+| Method | Endpoint | Mô tả |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/statistics/overview` | Tổng quan số lượng user và post |
+| `GET` | `/api/v1/statistics/users-by-role` | Thống kê user theo vai trò |
+| `GET` | `/api/v1/statistics/recent-posts?limit=5` | Lấy các bài viết mới nhất kèm tác giả |
+
 ---
 
 ## 🔧 Các lệnh Scripts hữu ích
