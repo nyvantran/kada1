@@ -108,6 +108,7 @@ npm run start:prod
 | Method | Endpoint | Mô tả |
 | :--- | :--- | :--- |
 | `GET` | `/api/v1/users?page=1&limit=10&search=admin` | Lấy danh sách Users phân trang (Được cache 2 phút) |
+| `GET` | `/api/v1/users/stats` | Xem thống kê tổng số Users, Posts và User mới nhất (Cache-Aside 5 phút) |
 | `GET` | `/api/v1/users/:id` | Xem chi tiết User (Cache-Aside 10 phút) |
 | `POST` | `/api/v1/users` | Tạo mới User (Tự động xoá cache danh sách cũ) |
 | `PATCH` | `/api/v1/users/:id` | Cập nhật User (Tự động xoá cache user & danh sách) |
