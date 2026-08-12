@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import compression from 'compression';
+import express from 'express';
+import { join } from 'path';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { PrismaClientExceptionFilter } from './prisma/prisma-client-exception.filter.js';
@@ -22,8 +24,15 @@ async function bootstrap() {
   const swaggerPath = configService.get<string>('SWAGGER_PATH', 'api/docs');
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
 
+  // Serve static assets from public folder
+  app.use(express.static(join(process.cwd(), 'public')));
+
   // Security & Middleware
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    }),
+  );
   app.use(compression());
   app.enableCors({
     origin: true,
