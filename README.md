@@ -213,8 +213,8 @@ Hệ thống Docker Compose bao gồm 4 container được phối hợp tự đ�
 
 | STT | Họ và Tên | MSSV | Vai Trò | Mô Tả Công Việc |
 | :---: | :--- | :---: | :--- | :--- |
-| 1 | **Trần Ti Ni** | `[]` | Trưởng nhóm / AI Engineer | Xây dựng kiến trúc Deep Agents, tích hợp LLM (Gemini), phát triển thuật toán đối soát 7 câu hỏi logic OT và ma trận phân loại nhân sự. |
-| 2 | **Lê Hoàng Thắng** | `[MSSV]` | Database Engineer | Thiết kế và quản trị CSDL Oracle, viết kịch bản DDL, cấu hình SQLAlchemy AsyncEngine và tối ưu truy vấn (Bind Parameters). |
-| 3 | **Nguyễn Hồ Quang Minh** | `[MSSV]` | Backend Developer 1 | Phát triển API bằng FastAPI, xây dựng phân hệ Tuyển dụng (Recruitment), bóc tách CV và xử lý chấm điểm bài test. |
-| 4 | **Phạm Duy Linh** | `[MSSV]` | Backend Developer 2 | Xây dựng phân hệ Onboarding và Performance, xử lý bóc tách báo cáo tuần từ Gmail sang JSON, tính toán KPI và năng suất. |
-| 5 | **Trần Đỗ Mạnh Duy** | `[MSSV]` | QA & Tester | Kiểm thử chất lượng ứng dụng (QA/QC), lập kế hoạch test case, kiểm thử tự động API và đảm bảo chất lượng phần mềm trước khi phát hành.
+| 1 | **Trần Ti Ni** |  | Trưởng nhóm / AI & Tech Lead | Xây dựng kiến trúc hệ thống NestJS, tích hợp AI/LLM, thiết kế Multi-stage Docker Compose và chỉ đạo quy trình phát triển. |
+| 2 | **Lê Hoàng Thắng** | | Database Engineer | Thiết kế Schema dữ liệu với Prisma 7, quản trị PostgreSQL & Redis Caching, viết kịch bản Migration và tối ưu truy vấn database. |
+| 3 | **Nguyễn Hồ Quang Minh** | | Backend Developer 1 | Phát triển RESTful API bằng NestJS, xây dựng phân hệ Quản lý Người dùng (Users Module) và tích hợp tài liệu Swagger UI. |
+| 4 | **Phạm Duy Linh** | | Backend Developer 2 | Xây dựng cơ chế Cache-Aside với Redis, tích hợp Health Check endpoints và tối ưu hóa hiệu năng hệ thống. |
+| 5 | **Trần Đỗ Mạnh Duy** |  | QA & DevOps Engineer | Cấu hình containerization Docker, kiểm thử tự động API (Jest/Supertest), thiết kế test case và đảm bảo chất lượng phần mềm. |
