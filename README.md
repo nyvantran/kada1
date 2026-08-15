@@ -206,3 +206,15 @@ Hệ thống Docker Compose bao gồm 4 container được phối hợp tự đ�
 3. **Cơ chế Cache-Aside với Redis**: Tự động kiểm tra cache trước khi truy vấn DB, tự động invalidation khi thay đổi dữ liệu.
 4. **Health Check endpoint**: Theo dõi thời gian thực tình trạng PostgreSQL, Redis và hệ thống memory/uptime.
 5. **Swagger API Documentation**: Đã tích hợp sẵn tài liệu tương tác Swagger cho toàn bộ các endpoint.
+
+---
+
+## 👥 Nhóm Thực Hiện - HR360
+
+| STT | Họ và Tên | MSSV | Vai Trò | Mô Tả Công Việc |
+| :---: | :--- | :---: | :--- | :--- |
+| 1 | **Trần Ti Ni** | `[]` | Trưởng nhóm / AI Engineer | Xây dựng kiến trúc Deep Agents, tích hợp LLM (Gemini), phát triển thuật toán đối soát 7 câu hỏi logic OT và ma trận phân loại nhân sự. |
+| 2 | **Lê Hoàng Thắng** | `[MSSV]` | Database Engineer | Thiết kế và quản trị CSDL Oracle, viết kịch bản DDL, cấu hình SQLAlchemy AsyncEngine và tối ưu truy vấn (Bind Parameters). |
+| 3 | **Nguyễn Hồ Quang Minh** | `[MSSV]` | Backend Developer 1 | Phát triển API bằng FastAPI, xây dựng phân hệ Tuyển dụng (Recruitment), bóc tách CV và xử lý chấm điểm bài test. |
+| 4 | **Phạm Duy Linh** | `[MSSV]` | Backend Developer 2 | Xây dựng phân hệ Onboarding và Performance, xử lý bóc tách báo cáo tuần từ Gmail sang JSON, tính toán KPI và năng suất. |
+| 5 | **Trần Đỗ Mạnh Duy** | `[MSSV]` | QA & Tester | Kiểm thử chất lượng ứng dụng (QA/QC), lập kế hoạch test case, kiểm thử tự động API và đảm bảo chất lượng phần mềm trước khi phát hành.
