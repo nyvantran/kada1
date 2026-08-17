@@ -96,14 +96,25 @@ npm run start:dev
 
 Sau khi hệ thống khởi chạy thành công, bạn có thể truy cập các đường dẫn sau:
 
-| Dịch vụ | URL | Mô tả |
-| :--- | :--- | :--- |
-| **NestJS API Base** | `http://localhost:3000/api/v1` | Root endpoint của ứng dụng |
-| **Swagger API Docs** | `http://localhost:3000/api/docs` | Giao diện kiểm thử & tài liệu API trực quan |
-| **Health Check API** | `http://localhost:3000/api/v1/health` | Kiểm tra kết nối DB, Redis, Memory & Uptime |
-| **Redis Commander GUI** | `http://localhost:8081` | Web UI quản lý & soi các Cache Key trong Redis |
-| **PostgreSQL** | `localhost:5432` | Cổng database PostgreSQL (User: `postgres`, Pass: `postgres123`) |
-| **Redis Server** | `localhost:6379` | Cổng Redis Server (Pass: `redis123`) |
+| Dịch vụ                     | URL                                                    | Mô tả                                                            |
+| :-------------------------- | :----------------------------------------------------- | :--------------------------------------------------------------- |
+| **NestJS API Base**         | `http://localhost:3000/api/v1`                         | Root endpoint của ứng dụng                                       |
+| **Swagger API Docs**        | `http://localhost:3000/api/docs`                       | Giao diện kiểm thử & tài liệu API trực quan                      |
+| **Tài liệu API & Diagrams** | [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | Chi tiết toàn bộ API, Class Diagram & Sequence Diagram           |
+| **Health Check API**        | `http://localhost:3000/api/v1/health`                  | Kiểm tra kết nối DB, Redis, Memory & Uptime                      |
+| **Redis Commander GUI**     | `http://localhost:8081`                                | Web UI quản lý & soi các Cache Key trong Redis                   |
+| **PostgreSQL**              | `localhost:5432`                                       | Cổng database PostgreSQL (User: `postgres`, Pass: `postgres123`) |
+| **Redis Server**            | `localhost:6379`                                       | Cổng Redis Server (Pass: `redis123`)                             |
+
+---
+
+## 📑 Tài liệu Thiết kế & Sơ đồ Hệ thống (API & Diagrams)
+
+Chi tiết đầy đủ về kiến trúc hệ thống, danh sách API, các DTOs, cấu trúc phản hồi và sơ đồ luồng hoạt động:
+👉 **[Xem chi tiết tại docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)**
+- 📋 **Danh sách chi tiết 13 Endpoints** (Health, Users, Posts).
+- 🏛️ **Class Diagram** (Cấu trúc phân tầng Controllers - Services - DTOs - Prisma Models).
+- 🔄 **Sequence Diagrams** (Cache-Aside flow, Invalidation flow, Health check flow).
 
 ---
 
@@ -139,63 +150,63 @@ Hệ thống Docker Compose bao gồm 4 container được phối hợp tự đ�
 
 ## 🛠️ Các lệnh Docker thường dùng (Cheat Sheet)
 
-| Lệnh npm | Lệnh Docker Compose tương đương | Mô tả |
-| :--- | :--- | :--- |
-| `npm run docker:build` | `docker compose up -d --build` | Build lại image và bật toàn bộ containers |
-| `npm run docker:up` | `docker compose up -d` | Bật toàn bộ các container đã build |
-| `npm run docker:infra` | `docker compose up postgres redis redis-commander -d` | Chỉ bật DB & Redis cho dev local |
-| `npm run docker:down` | `docker compose down` | Dừng và xoá tất cả containers/networks |
-| `npm run docker:logs` | `docker compose logs -f` | Xem realtime log của tất cả dịch vụ |
-| `-` | `docker compose logs -f app` | Xem realtime log riêng của NestJS App |
-| `-` | `docker compose ps` | Kiểm tra trạng thái hoạt động của các container |
-| `-` | `docker compose down -v` | Dừng container và xoá sạch Volumes dữ liệu |
+| Lệnh npm               | Lệnh Docker Compose tương đương                       | Mô tả                                           |
+| :--------------------- | :---------------------------------------------------- | :---------------------------------------------- |
+| `npm run docker:build` | `docker compose up -d --build`                        | Build lại image và bật toàn bộ containers       |
+| `npm run docker:up`    | `docker compose up -d`                                | Bật toàn bộ các container đã build              |
+| `npm run docker:infra` | `docker compose up postgres redis redis-commander -d` | Chỉ bật DB & Redis cho dev local                |
+| `npm run docker:down`  | `docker compose down`                                 | Dừng và xoá tất cả containers/networks          |
+| `npm run docker:logs`  | `docker compose logs -f`                              | Xem realtime log của tất cả dịch vụ             |
+| `-`                    | `docker compose logs -f app`                          | Xem realtime log riêng của NestJS App           |
+| `-`                    | `docker compose ps`                                   | Kiểm tra trạng thái hoạt động của các container |
+| `-`                    | `docker compose down -v`                              | Dừng container và xoá sạch Volumes dữ liệu      |
 
 ---
 
 ## 🌐 4. Các đường dẫn truy cập (Endpoints)
 
-| Dịch vụ | Địa chỉ | Mô tả |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Kiểm tra kết nối PostgreSQL, Redis và trạng thái RAM/Uptime |
+| Dịch vụ | Địa chỉ          | Mô tả                                                       |
+| :------ | :--------------- | :---------------------------------------------------------- |
+| `GET`   | `/api/v1/health` | Kiểm tra kết nối PostgreSQL, Redis và trạng thái RAM/Uptime |
 
 ### 👤 Users Management (Tích hợp Redis Cache)
-| Method | Endpoint | Mô tả |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/users?page=1&limit=10&search=admin` | Lấy danh sách Users phân trang (Được cache 2 phút) |
-| `GET` | `/api/v1/users/stats` | Xem thống kê tổng số Users, Posts và User mới nhất (Cache 5 phút) |
-| `GET` | `/api/v1/users/:id` | Xem chi tiết User (Cache-Aside 10 phút) |
-| `POST` | `/api/v1/users` | Tạo mới User (Tự động xoá cache danh sách cũ) |
-| `PATCH` | `/api/v1/users/:id` | Cập nhật User (Tự động xoá cache user & danh sách) |
-| `DELETE` | `/api/v1/users/:id` | Xoá User (Tự động dọn dẹp cache) |
+| Method   | Endpoint                                     | Mô tả                                                             |
+| :------- | :------------------------------------------- | :---------------------------------------------------------------- |
+| `GET`    | `/api/v1/users?page=1&limit=10&search=admin` | Lấy danh sách Users phân trang (Được cache 2 phút)                |
+| `GET`    | `/api/v1/users/stats`                        | Xem thống kê tổng số Users, Posts và User mới nhất (Cache 5 phút) |
+| `GET`    | `/api/v1/users/:id`                          | Xem chi tiết User (Cache-Aside 10 phút)                           |
+| `POST`   | `/api/v1/users`                              | Tạo mới User (Tự động xoá cache danh sách cũ)                     |
+| `PATCH`  | `/api/v1/users/:id`                          | Cập nhật User (Tự động xoá cache user & danh sách)                |
+| `DELETE` | `/api/v1/users/:id`                          | Xoá User (Tự động dọn dẹp cache)                                  |
 
 ### 📝 Posts Management
-| Method | Endpoint | Mô tả |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/posts?page=1&limit=10` | Lấy danh sách bài viết kèm thông tin Tác giả |
-| `GET` | `/api/v1/posts/:id` | Xem chi tiết bài viết (Cache) |
-| `POST` | `/api/v1/posts` | Tạo bài viết mới gắn với `authorId` |
-| `PATCH` | `/api/v1/posts/:id` | Cập nhật bài viết |
-| `DELETE` | `/api/v1/posts/:id` | Xoá bài viết |
+| Method   | Endpoint                        | Mô tả                                        |
+| :------- | :------------------------------ | :------------------------------------------- |
+| `GET`    | `/api/v1/posts?page=1&limit=10` | Lấy danh sách bài viết kèm thông tin Tác giả |
+| `GET`    | `/api/v1/posts/:id`             | Xem chi tiết bài viết (Cache)                |
+| `POST`   | `/api/v1/posts`                 | Tạo bài viết mới gắn với `authorId`          |
+| `PATCH`  | `/api/v1/posts/:id`             | Cập nhật bài viết                            |
+| `DELETE` | `/api/v1/posts/:id`             | Xoá bài viết                                 |
 
 ---
 
 ## ⚙️ 6. Cấu hình Biến môi trường (`.env`)
 
-| Biến môi trường | Giá trị mặc định | Giải thích |
-| :--- | :--- | :--- |
-| `PORT` | `3000` | Cổng ứng dụng NestJS |
-| `API_PREFIX` | `api/v1` | Tiền tố chung cho tất cả các API route |
-| `SWAGGER_PATH` | `api/docs` | Đường dẫn truy cập Swagger UI |
-| `DB_HOST` | `localhost` / `postgres` | Host kết nối PostgreSQL |
-| `DB_PORT` | `5432` | Cổng PostgreSQL |
-| `DB_USER` | `postgres` | Tài khoản PostgreSQL |
-| `DB_PASSWORD` | `postgres123` | Mật khẩu PostgreSQL |
-| `DB_NAME` | `nest_db` | Tên Cơ sở dữ liệu |
-| `DATABASE_URL` | `postgresql://postgres:postgres123@localhost:5432/nest_db?schema=public` | Connection String cho Prisma |
-| `REDIS_HOST` | `localhost` / `redis` | Host kết nối Redis |
-| `REDIS_PORT` | `6379` | Cổng Redis |
-| `REDIS_PASSWORD` | `redis123` | Mật khẩu Redis |
-| `REDIS_TTL` | `3600` | Thời gian đệm cache (giây) |
+| Biến môi trường  | Giá trị mặc định                                                         | Giải thích                             |
+| :--------------- | :----------------------------------------------------------------------- | :------------------------------------- |
+| `PORT`           | `3000`                                                                   | Cổng ứng dụng NestJS                   |
+| `API_PREFIX`     | `api/v1`                                                                 | Tiền tố chung cho tất cả các API route |
+| `SWAGGER_PATH`   | `api/docs`                                                               | Đường dẫn truy cập Swagger UI          |
+| `DB_HOST`        | `localhost` / `postgres`                                                 | Host kết nối PostgreSQL                |
+| `DB_PORT`        | `5432`                                                                   | Cổng PostgreSQL                        |
+| `DB_USER`        | `postgres`                                                               | Tài khoản PostgreSQL                   |
+| `DB_PASSWORD`    | `postgres123`                                                            | Mật khẩu PostgreSQL                    |
+| `DB_NAME`        | `nest_db`                                                                | Tên Cơ sở dữ liệu                      |
+| `DATABASE_URL`   | `postgresql://postgres:postgres123@localhost:5432/nest_db?schema=public` | Connection String cho Prisma           |
+| `REDIS_HOST`     | `localhost` / `redis`                                                    | Host kết nối Redis                     |
+| `REDIS_PORT`     | `6379`                                                                   | Cổng Redis                             |
+| `REDIS_PASSWORD` | `redis123`                                                               | Mật khẩu Redis                         |
+| `REDIS_TTL`      | `3600`                                                                   | Thời gian đệm cache (giây)             |
 
 ---
 
@@ -211,10 +222,10 @@ Hệ thống Docker Compose bao gồm 4 container được phối hợp tự đ�
 
 ## 👥 Nhóm Thực Hiện - HR360
 
-| STT | Họ và Tên | MSSV | Vai Trò | Mô Tả Công Việc |
-| :---: | :--- | :---: | :--- | :--- |
-| 1 | **Trần Ti Ni** |  | Trưởng nhóm / AI & Tech Lead | Xây dựng kiến trúc hệ thống NestJS, tích hợp AI/LLM, thiết kế Multi-stage Docker Compose và chỉ đạo quy trình phát triển. |
-| 2 | **Lê Hoàng Thắng** | | Database Engineer | Thiết kế Schema dữ liệu với Prisma 7, quản trị PostgreSQL & Redis Caching, viết kịch bản Migration và tối ưu truy vấn database. |
-| 3 | **Nguyễn Hồ Quang Minh** | | Backend Developer 1 | Phát triển RESTful API bằng NestJS, xây dựng phân hệ Quản lý Người dùng (Users Module) và tích hợp tài liệu Swagger UI. |
-| 4 | **Phạm Duy Linh** | | Backend Developer 2 | Xây dựng cơ chế Cache-Aside với Redis, tích hợp Health Check endpoints và tối ưu hóa hiệu năng hệ thống. |
-| 5 | **Trần Đỗ Mạnh Duy** |  | QA & DevOps Engineer | Cấu hình containerization Docker, kiểm thử tự động API (Jest/Supertest), thiết kế test case và đảm bảo chất lượng phần mềm. |
+|  STT  | Họ và Tên                |    MSSV     | Vai Trò                      | Mô Tả Công Việc                                                                                                                 |
+| :---: | :----------------------- | :---------: | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+|   1   | **Trần Ti Ni**           | N22DCCN157  | Trưởng nhóm / AI & Tech Lead | Xây dựng kiến trúc hệ thống NestJS, tích hợp AI/LLM, thiết kế Multi-stage Docker Compose và chỉ đạo quy trình phát triển.       |
+|   2   | **Lê Hoàng Thắng**       |  N22DCCN153  | Database Engineer            | Thiết kế Schema dữ liệu với Prisma 7, quản trị PostgreSQL & Redis Caching, viết kịch bản Migration và tối ưu truy vấn database. |
+|   3   | **Nguyễn Hồ Quang Minh** |  N22DCCN153  | Backend Developer 1          | Phát triển RESTful API bằng NestJS, xây dựng phân hệ Quản lý Người dùng (Users Module) và tích hợp tài liệu Swagger UI.         |
+|   4   | **Phạm Duy Linh**        | N22DCCN147  | Backend Developer 2          | Xây dựng cơ chế Cache-Aside với Redis, tích hợp Health Check endpoints và tối ưu hóa hiệu năng hệ thống.                        |
+|   5   | **Trần Đỗ Mạnh Duy**     | N22DCCN114 | QA & DevOps Engineer         | Cấu hình containerization Docker, kiểm thử tự động API (Jest/Supertest), thiết kế test case và đảm bảo chất lượng phần mềm.     |

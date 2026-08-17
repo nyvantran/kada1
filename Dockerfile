@@ -27,19 +27,20 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy package files and install production dependencies only
+# Copy package files and dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+COPY --from=builder /app/node_modules ./node_modules
 
-# Copy built application and Prisma artifacts from builder
+# Copy built application, static assets, and Prisma artifacts from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/src ./src
 
 # Expose port
 EXPOSE 3000
 
 # Start production server
 CMD ["node", "dist/main"]
+
