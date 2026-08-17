@@ -1,167 +1,191 @@
-# 🚀 NestJS Backend (PostgreSQL + Prisma ORM + Redis Cache)
+# 🚀 NestJS Enterprise Backend Template
+### (NestJS 11 + PostgreSQL 16 + Prisma ORM 7 + Redis 7 Cache + Docker Compose + Swagger)
 
-Dự án Backend tiêu chuẩn doanh nghiệp được xây dựng trên nền tảng **NestJS**, tích hợp **PostgreSQL** thông qua **Prisma ORM**, hệ thống **Redis Cache (Cache-Aside Pattern)**, tài liệu hoá API tự động với **Swagger / OpenAPI**, cùng cấu hình Docker Compose sẵn sàng chạy ngay.
-
----
-
-## 🛠️ Công nghệ sử dụng (Tech Stack)
-
-- **Framework**: [NestJS 11](https://nestjs.com/) (Node.js TypeScript framework)
-- **Database**: [PostgreSQL 16](https://www.postgresql.org/)
-- **ORM**: [Prisma 7](https://www.prisma.io/) (Type-safe Database Client & Migrations)
-- **Cache / In-Memory Store**: [Redis 7](https://redis.io/) via `ioredis`
-- **Documentation**: [Swagger / OpenAPI](https://swagger.io/)
-- **Validation**: `class-validator` & `class-transformer`
-- **Security & Performance**: `helmet`, `compression`, `cors`
-- **Containerization**: `docker-compose` (PostgreSQL + Redis + Redis Commander Web UI)
+Template backend hoàn chỉnh, chuẩn hóa theo kiến trúc Enterprise, tích hợp sẵn cơ chế **Cache-Aside với Redis**, tầng dữ liệu mạnh mẽ với **Prisma 7 & PostgreSQL**, tài liệu hóa **Swagger / OpenAPI**, cùng cấu hình **Docker Compose đa môi trường**.
 
 ---
 
-## 📁 Cấu trúc thư mục (Project Structure)
+## 📊 1. Tổng hợp Tech Stack
+
+| Thành phần | Công nghệ | Phiên bản | Vai trò & Mục đích |
+| :--- | :--- | :--- | :--- |
+| **Backend Framework** | [NestJS](https://nestjs.com/) | `^11.0.1` | Kiến trúc module, DI (Dependency Injection), Controller, Service |
+| **Language & Runtime** | [Node.js](https://nodejs.org/) & TypeScript | `Node 20+` / `TS 5.7` | Ngôn ngữ tĩnh kiểu mạnh, an toàn và dễ bảo trì |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) | `16-alpine` | Cơ sở dữ liệu quan hệ (RDBMS) chính |
+| **ORM & Query Engine** | [Prisma ORM](https://www.prisma.io/) | `^7.9.1` | Quản lý schema, migration, client type-safe, driver adapter PostgreSQL |
+| **In-Memory Cache** | [Redis](https://redis.io/) (`ioredis`) | `7-alpine` / `ioredis ^6.0` | Bộ nhớ đệm tốc độ cao, hỗ trợ TTL, Cache-Aside, non-blocking SCAN key purge |
+| **Redis GUI Manager** | [Redis Commander](https://joeferner.github.io/redis-commander/) | `latest` | Giao diện Web trực quan quản lý cache key trên trình duyệt (Port 8081) |
+| **API Documentation** | [Swagger / OpenAPI](https://swagger.io/) | `^11.4.6` | Tự động sinh tài liệu API tương tác tại `/api/docs` |
+| **Validation & Transform** | `class-validator` & `class-transformer` | `^0.15` / `^0.5` | Xác thực dữ liệu đầu vào DTO và biến môi trường `.env` |
+| **Security & Middleware** | `helmet`, `compression`, `cors` | Latest | Bảo vệ HTTP headers, nén gzip giảm tải băng thông |
+| **Containerization** | [Docker](https://www.docker.com/) & Docker Compose | `Compose v2` | Đóng gói toàn bộ ứng dụng và hạ tầng DB/Redis |
+
+---
+
+## 📁 2. Cấu trúc thư mục dự án
 
 ```text
+kada1/
 ├── prisma/
-│   ├── schema.prisma             # Định nghĩa Database Models (User, Post, ...)
-│   └── seed.ts                   # Dữ liệu mẫu (Database Seeding)
+│   ├── schema.prisma             # Định nghĩa Database Models (User, Post)
+│   └── seed.ts                   # Script nạp dữ liệu mẫu ban đầu
 ├── src/
-│   ├── common/                   # Shared Filters, Interceptors, DTOs
-│   │   ├── dto/pagination.dto.ts # DTO phân trang, tìm kiếm, sắp xếp
-│   │   ├── filters/              # Global Exception Filter (Chuẩn hoá JSON lỗi)
-│   │   └── interceptors/         # Response Envelope & Logging Interceptor
+│   ├── common/                   # Shared modules, filters, interceptors
+│   │   ├── dto/pagination.dto.ts # DTO chuẩn hóa phân trang & tìm kiếm
+│   │   ├── filters/              # Global Exception Filter (Chuẩn hóa JSON lỗi)
+│   │   └── interceptors/         # Response Envelope & Request Logging
 │   ├── config/
 │   │   └── env.validation.ts     # Validate biến môi trường bằng class-validator
-│   ├── health/                   # Endpoint kiểm tra sức khoẻ hệ thống (DB & Redis)
+│   ├── generated/prisma/         # Prisma Client type-safe sinh tự động
+│   ├── health/                   # API Health Check (Kiểm tra Postgres & Redis)
 │   ├── prisma/                   # PrismaService & Prisma Exception Filter
-│   ├── redis/                    # RedisService (Get/Set, Del, DelByPattern, GetOrSet)
-│   ├── users/                    # Module Quản lý User (CRUD + Redis Cache)
-│   ├── posts/                    # Module Quản lý Post (Quan hệ với User + Cache)
-│   ├── app.module.ts             # Root Module
-│   └── main.ts                   # Bootstrap App (Swagger, Pipes, Filters, Security)
-├── docker-compose.yml            # Khởi chạy PostgreSQL, Redis & Redis Commander
+│   ├── redis/                    # RedisService (Get/Set, TTL, SCAN Invalidation)
+│   ├── users/                    # Module Users (CRUD + Cache-Aside)
+│   ├── posts/                    # Module Posts (Quan hệ 1-N với User + Cache)
+│   ├── app.module.ts             # Root Module kết nối toàn bộ hệ thống
+│   └── main.ts                   # Entry point (Swagger, Pipes, Interceptors, Security)
+├── docker-compose.yml            # Docker Compose cho App, Postgres, Redis, Redis-Commander
+├── Dockerfile                    # Multi-stage Docker build tối ưu dung lượng cho NestJS
+├── .dockerignore                 # Các file bỏ qua khi đóng gói Docker Image
 ├── prisma.config.ts              # Cấu hình Prisma 7 Datasource & Migrations
-├── .env                          # Biến môi trường local
-├── .env.example                  # Template biến môi trường
-└── package.json
+├── .env                          # File cấu hình môi trường local
+├── .env.example                  # File mẫu biến môi trường
+└── package.json                  # Định nghĩa dependencies và scripts
 ```
 
 ---
 
-## ⚡ Hướng dẫn cài đặt & Chạy dự án (Quick Start)
+## 🐳 3. Hướng dẫn chạy dự án với Docker
 
-### 1. Khởi động PostgreSQL & Redis qua Docker
+Dự án cung cấp 2 phương thức chạy linh hoạt:
 
-Chạy lệnh sau để khởi động PostgreSQL (cổng `5432`), Redis (cổng `6379`), và Redis Commander GUI (cổng `8081`):
+### Cách 1: Chạy Hạ tầng qua Docker (Postgres + Redis) + Chạy NestJS Local (Khuyên dùng khi Dev)
 
+Phương thức này giúp bạn tận dụng tính năng **Hot-Reload** của NestJS trên máy local trong khi DB và Redis chạy biệt lập trong Docker.
+
+#### 1️⃣ Bật cơ sở dữ liệu PostgreSQL & Redis:
 ```bash
-npm run docker:up
+npm run docker:infra
 ```
+> Lệnh này sẽ khởi động 3 container:
+> - **PostgreSQL 16**: `localhost:5432`
+> - **Redis 7**: `localhost:6379`
+> - **Redis Commander GUI**: `http://localhost:8081`
 
-> 💡 **Redis Commander GUI**: Truy cập `http://localhost:8081` để xem trực quan các cache key trong Redis.
-
----
-
-### 2. Đồng bộ Database Schema (Prisma)
-
-Đẩy schema vào cơ sở dữ liệu PostgreSQL và tạo dữ liệu mẫu (Seed data):
-
+#### 2️⃣ Đồng bộ Schema và nạp dữ liệu mẫu:
 ```bash
-# Push schema trực tiếp vào PostgreSQL
 npm run prisma:push
-
-# (Tuỳ chọn) Tạo dữ liệu mẫu ban đầu
 npm run prisma:seed
 ```
 
-Hoặc nếu bạn muốn tạo file migration:
+#### 3️⃣ Khởi động NestJS ở chế độ Development:
 ```bash
-npm run prisma:migrate
-```
-
----
-
-### 3. Chạy ứng dụng NestJS
-
-```bash
-# Chế độ phát triển (Hot-reload)
 npm run start:dev
-
-# Chế độ Production
-npm run build
-npm run start:prod
 ```
 
-Ứng dụng sẽ khởi chạy tại:
-- **API Base URL**: `http://localhost:3000/api/v1`
-- **Swagger API Docs**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
-- **Health Check Endpoint**: [http://localhost:3000/api/v1/health](http://localhost:3000/api/v1/health)
+---
+
+### Cách 2: Chạy Toàn bộ hệ thống bằng Docker Compose (Full-Stack Containerized)
+
+Phương thức này đóng gói toàn bộ NestJS App, PostgreSQL, Redis và Redis Commander vào Docker, sẵn sàng deploy môi trường Staging / Production.
+
+#### 1️⃣ Khởi động toàn bộ dịch vụ:
+```bash
+npm run docker:all
+```
+*(Hoặc dùng lệnh: `docker compose up -d --build`)*
+
+Docker sẽ tự động:
+1. Build `Dockerfile` đa tầng (multi-stage) cho NestJS App.
+2. Khởi động PostgreSQL và Redis với cơ chế `healthcheck`.
+3. Chỉ khởi động NestJS API sau khi PostgreSQL và Redis đã hoàn toàn sẵn sàng (`service_healthy`).
+
+#### 2️⃣ Xem realtime logs của hệ thống:
+```bash
+npm run docker:logs
+```
+
+#### 3️⃣ Dừng toàn bộ hệ thống:
+```bash
+npm run docker:down
+```
 
 ---
 
-## 📖 Danh sách API chính (Endpoints)
+## 🌐 4. Các đường dẫn truy cập (Endpoints)
 
-### 🩺 Health & Diagnostics
-| Method | Endpoint | Mô tả |
+| Dịch vụ | Địa chỉ | Mô tả |
 | :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Kiểm tra kết nối PostgreSQL, Redis và trạng thái RAM/Uptime |
-
-### 👤 Users Management (Tích hợp Redis Cache)
-| Method | Endpoint | Mô tả |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/users?page=1&limit=10&search=admin` | Lấy danh sách Users phân trang (Được cache 2 phút) |
-| `GET` | `/api/v1/users/:id` | Xem chi tiết User (Cache-Aside 10 phút) |
-| `POST` | `/api/v1/users` | Tạo mới User (Tự động xoá cache danh sách cũ) |
-| `PATCH` | `/api/v1/users/:id` | Cập nhật User (Tự động xoá cache user & danh sách) |
-| `DELETE` | `/api/v1/users/:id` | Xoá User (Tự động dọn dẹp cache) |
-
-### 📝 Posts Management
-| Method | Endpoint | Mô tả |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/posts?page=1&limit=10` | Lấy danh sách bài viết kèm thông tin Tác giả |
-| `GET` | `/api/v1/posts/:id` | Xem chi tiết bài viết (Cache) |
-| `POST` | `/api/v1/posts` | Tạo bài viết mới gắn với `authorId` |
-| `PATCH` | `/api/v1/posts/:id` | Cập nhật bài viết |
-| `DELETE` | `/api/v1/posts/:id` | Xoá bài viết |
+| **API Base URL** | `http://localhost:3000/api/v1` | Tiền tố chung của các API routes |
+| **Swagger API Docs** | [http://localhost:3000/api/docs](http://localhost:3000/api/docs) | Giao diện kiểm thử và tài liệu API OpenAPI tương tác |
+| **Health Check API** | [http://localhost:3000/api/v1/health](http://localhost:3000/api/v1/health) | Kiểm tra realtime kết nối Postgres, Redis, RAM & Uptime |
+| **Redis Commander GUI** | [http://localhost:8081](http://localhost:8081) | Giao diện Web quản lý trực tiếp các Key/Value trong Redis |
+| **Prisma Studio** | `npm run prisma:studio` (Port `5555`) | Giao diện trực quan xem & sửa dữ liệu PostgreSQL |
 
 ---
 
-## 🔧 Các lệnh Scripts hữu ích
+## ⚡ 5. Bảng tổng hợp các lệnh Scripts (`package.json`)
 
-| Lệnh | Ý nghĩa |
-| :--- | :--- |
-| `npm run start:dev` | Chạy dev server với hot-reload |
-| `npm run build` | Biên dịch TypeScript sang thư mục `dist/` |
-| `npm run test` | Chạy Unit Tests với Jest |
-| `npm run prisma:generate` | Tạo Prisma Client TypeScript |
-| `npm run prisma:push` | Đồng bộ schema trực tiếp vào PostgreSQL |
-| `npm run prisma:migrate` | Tạo & chạy migration |
-| `npm run prisma:studio` | Mở giao diện Prisma Studio quản lý dữ liệu trên trình duyệt |
-| `npm run prisma:seed` | Nạp dữ liệu mẫu vào database |
-| `npm run docker:up` | Bật toàn bộ containers (Postgres, Redis, Redis Commander) |
-| `npm run docker:down` | Dừng các containers |
-| `npm run docker:logs` | Xem realtime logs của Docker containers |
-
----
-
-## ⚙️ Cấu hình Biến môi trường (`.env`)
-
-| Biến | Giá trị mặc định | Giải thích |
+| Nhóm | Lệnh | Mô tả |
 | :--- | :--- | :--- |
-| `PORT` | `3000` | Cổng chạy NestJS server |
-| `API_PREFIX` | `api/v1` | Tiền tố chung cho tất cả các API route |
-| `SWAGGER_PATH` | `api/docs` | Đường dẫn truy cập Swagger UI |
-| `DATABASE_URL` | `postgresql://postgres:postgres123@localhost:5432/nest_db?schema=public` | Chuỗi kết nối PostgreSQL |
-| `REDIS_HOST` | `localhost` | Địa chỉ máy chủ Redis |
-| `REDIS_PORT` | `6379` | Cổng Redis |
-| `REDIS_PASSWORD` | `redis123` | Mật khẩu xác thực Redis |
-| `REDIS_TTL` | `3600` | Thời gian sống mặc định của cache (giây) |
+| **Development** | `npm run start:dev` | Chạy dev server với hot-reload |
+| **Build & Test** | `npm run build` | Biên dịch TypeScript sang thư mục `dist/` |
+| | `npm run test` | Chạy bộ kiểm thử Unit Tests với Jest |
+| | `npm run lint` | Tự động kiểm tra và sửa lỗi cú pháp ESLint |
+| **Prisma ORM** | `npm run prisma:generate` | Sinh Prisma Client TypeScript vào `src/generated/` |
+| | `npm run prisma:push` | Đẩy trực tiếp schema vào DB mà không cần migration file |
+| | `npm run prisma:migrate` | Tạo và chạy migration có versioning |
+| | `npm run prisma:seed` | Nạp dữ liệu mẫu vào PostgreSQL |
+| | `npm run prisma:studio` | Bật giao diện web quản trị cơ sở dữ liệu Prisma Studio |
+| **Docker** | `npm run docker:infra` | Chỉ bật PostgreSQL, Redis và Redis Commander |
+| | `npm run docker:all` | Build và bật toàn bộ hệ thống (kèm NestJS API container) |
+| | `npm run docker:down` | Dừng và hạ toàn bộ containers |
+| | `npm run docker:logs` | Xem logs trực tiếp của tất cả containers |
 
 ---
 
-## 🌟 Tính năng nổi bật
+## ⚙️ 6. Cấu hình Biến môi trường (`.env`)
 
-1. **Prisma 7 Engine & PostgreSQL Adapter**: Tận dụng kiến trúc driver adapter hiện đại của Prisma 7 mang lại tốc độ truy vấn tối ưu.
-2. **Cơ chế Cache-Aside với Redis**: Tự động kiểm tra cache trước khi truy vấn DB, đồng thời tự động vô hiệu hoá cache (invalidation) khi có hành động thêm/sửa/xoá.
-3. **Scan Pattern Key Invalidation**: Xoá cache theo mẫu (wildcard pattern) an toàn thông qua non-blocking Redis `SCAN` cursor.
-4. **Global Standardized Response Envelope**: Tất cả phản hồi thành công đều tuân thủ chuẩn `{ success: true, statusCode: 200, data: ..., timestamp: ... }`.
-5. **Prisma Exception Filter**: Bắt lỗi ràng buộc dữ liệu (Unique constraint `P2002`, Not found `P2025`, Foreign key `P2003`) và trả về mã HTTP tương ứng (409, 404, 400).
-6. **Bảo mật sẵn có**: Tích hợp `helmet` chống các lỗ hổng HTTP header phổ biến, hỗ trợ nén `compression` và CORS linh hoạt.
+```env
+# Application
+NODE_ENV=development
+PORT=3000
+API_PREFIX=api/v1
+SWAGGER_PATH=api/docs
+
+# Database (PostgreSQL)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres123
+DB_NAME=nest_db
+DB_SCHEMA=public
+DATABASE_URL=postgresql://postgres:postgres123@localhost:5432/nest_db?schema=public
+
+# Redis Cache
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=redis123
+REDIS_DB=0
+REDIS_TTL=3600
+```
+
+---
+
+## 💡 7. Kiến trúc & Các cơ chế cốt lõi
+
+### 🧠 Cơ chế Cache-Aside (Redis)
+1. **Đọc dữ liệu (`GET`)**: Ứng dụng kiểm tra Redis cache trước. Nếu có (*Cache Hit*), trả kết quả ngay lập tức mà không cần query Database. Nếu chưa có (*Cache Miss*), query PostgreSQL, ghi vào Redis với thời gian hết hạn (`TTL`), rồi trả về cho client.
+2. **Ghi / Cập nhật / Xoá (`POST`, `PATCH`, `DELETE`)**: Ứng dụng cập nhật Database, đồng thời tự động xóa cache đơn lẻ và xóa các cache danh sách liên quan thông qua non-blocking Redis `SCAN` cursor (`delByPattern`), tránh hiện tượng dữ liệu cũ (*stale data*).
+
+### 🛡️ Chuẩn hóa lỗi & Phản hồi
+- **Chuẩn hóa phản hồi thành công**: Mọi API trả về đều có định dạng chuẩn:
+  ```json
+  {
+    "success": true,
+    "statusCode": 200,
+    "data": { ... },
+    "timestamp": "2026-08-12T07:30:00.000Z"
+  }
+  ```
+- **Xử lý ngoại lệ Prisma tự động**: Bộ lọc `PrismaClientExceptionFilter` bắt các mã lỗi Prisma như `P2002` (Trùng unique key), `P2025` (Không tìm thấy record), `P2003` (Lỗi khoá ngoại) và chuyển hóa thành HTTP 409 Conflict, 404 Not Found, 400 Bad Request một cách rõ ràng.

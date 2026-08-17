@@ -1,0 +1,16 @@
+node_modules
+dist
+generated
+.git
+.gitignore
+.env
+.env.local
+npm-debug.log
+docker-compose*.yml
+Dockerfile
+README.md
+.agents
+.claude
+.windsurf
+coverage
+test
