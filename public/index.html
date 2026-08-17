@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NestJS + Postgres + Redis Demo Dashboard</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: #131b2e;
+      --bg-card-hover: #1a253e;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(19, 27, 46, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      box-shadow: 0 0 10px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(244, 63, 94, 0.25);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .stat-info .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    .stat-info .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .stat-icon.purple { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+    .stat-icon.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+    .stat-icon.emerald { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+    .stat-icon.rose { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Tab Content Panels */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Content Card & Table */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 0.9rem 1rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 1rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .role-admin { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+    .role-user { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+
+    /* Code block */
+    pre {
+      background: #070a12;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #a7f3d0;
+      overflow-x: auto;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #090e1a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      padding: 1.75rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-emerald);
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #fff;
+      font-size: 0.9rem;
+      min-width: 300px;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-bolt"></i>
+      </div>
+      <div>
+        <span>NestJS Backend Dashboard</span>
+        <span style="font-size: 0.75rem; color: var(--accent-cyan); display: block; font-weight: 500;">Prisma 7 + Redis Cache</span>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <div class="badge-status" id="health-badge">
+        <div class="badge-dot"></div>
+        <span id="health-text">Checking System...</span>
+      </div>
+
+      <a href="/api/docs" target="_blank" class="btn btn-secondary">
+        <i class="fa-solid fa-book"></i> Swagger Docs
+      </a>
+      <a href="http://localhost:8081" target="_blank" class="btn btn-secondary">
+        <i class="fa-solid fa-database"></i> Redis GUI
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+    
+    <!-- Top Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="stat-total-users">-</div>
+        </div>
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-value" id="stat-total-posts">-</div>
+        </div>
+        <div class="stat-icon cyan">
+          <i class="fa-solid fa-newspaper"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Avg Posts / User</div>
+          <div class="stat-value" id="stat-avg-posts">-</div>
+        </div>
+        <div class="stat-icon emerald">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Redis Cache Latency</div>
+          <div class="stat-value" id="stat-redis-latency">-</div>
+        </div>
+        <div class="stat-icon rose">
+          <i class="fa-solid fa-memory"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('users-tab', event)">
+        <i class="fa-solid fa-user-gear"></i> Users Management
+      </button>
+      <button class="tab-btn" onclick="switchTab('posts-tab', event)">
+        <i class="fa-solid fa-file-lines"></i> Posts List
+      </button>
+      <button class="tab-btn" onclick="switchTab('stats-tab', event)">
+        <i class="fa-solid fa-chart-pie"></i> Stats & Raw API
+      </button>
+      <button class="tab-btn" onclick="switchTab('health-tab', event)">
+        <i class="fa-solid fa-heart-pulse"></i> System Diagnostics
+      </button>
+    </div>
+
+    <!-- Tab 1: Users Management -->
+    <div id="users-tab" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 User Directory</div>
+          <div style="display: flex; gap: 0.75rem;">
+            <input type="text" id="user-search" class="form-input" style="width: 240px; padding: 0.5rem 0.9rem;" placeholder="Search email or name..." oninput="handleSearch()" />
+            <button class="btn btn-primary" onclick="openCreateUserModal()">
+              <i class="fa-solid fa-plus"></i> Add User
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Posts Count</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading Users from API...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Posts List -->
+    <div id="posts-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📝 Posts List</div>
+          <button class="btn btn-secondary" onclick="loadPosts()">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody id="posts-table-body">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading Posts...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Stats & Raw JSON -->
+    <div id="stats-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 GET /api/v1/users/stats Response</div>
+          <button class="btn btn-secondary" onclick="loadStats()">
+            <i class="fa-solid fa-arrows-rotate"></i> Re-fetch Stats
+          </button>
+        </div>
+        <pre id="stats-json">Loading stats API data...</pre>
+      </div>
+    </div>
+
+    <!-- Tab 4: Health Diagnostics -->
+    <div id="health-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🩺 GET /api/v1/health Response</div>
+          <button class="btn btn-secondary" onclick="loadHealth()">
+            <i class="fa-solid fa-arrows-rotate"></i> Check Health
+          </button>
+        </div>
+        <pre id="health-json">Checking system health...</pre>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-backdrop" id="create-modal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="color: #fff; font-size: 1.2rem;">Create New User</h3>
+        <button onclick="closeCreateUserModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <form id="create-user-form" onsubmit="handleCreateUser(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="user-name" class="form-input" placeholder="e.g. Alex Johnson" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="user-email" class="form-input" placeholder="e.g. alex@example.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select id="user-role" class="form-select">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateUserModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    const API_BASE = '/api/v1';
+    let searchTimeout = null;
+
+    // Initialize Dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      loadHealth();
+      loadStats();
+      loadUsers();
+      loadPosts();
+    });
+
+    // Tab Switcher
+    function switchTab(tabId, evt) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add('active');
+      }
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Toast Notification
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--accent-emerald);"></i> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // 1. Fetch Health Status
+    async function loadHealth() {
+      try {
+        const res = await fetch(`${API_BASE}/health`);
+        const json = await res.json();
+        document.getElementById('health-json').textContent = JSON.stringify(json, null, 2);
+
+        if (json.success && json.data?.services) {
+          const dbStatus = json.data.services.database.status;
+          const redisLatency = json.data.services.cache.latency;
+          
+          document.getElementById('health-text').textContent = `DB: ${dbStatus} | Redis: ${redisLatency}`;
+          document.getElementById('stat-redis-latency').textContent = redisLatency;
+        }
+      } catch (err) {
+        document.getElementById('health-text').textContent = 'API Connection Failed';
+      }
+    }
+
+    // 2. Fetch Stats (GET /api/v1/users/stats)
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/users/stats`);
+        const json = await res.json();
+        document.getElementById('stats-json').textContent = JSON.stringify(json, null, 2);
+
+        if (json.success && json.data) {
+          document.getElementById('stat-total-users').textContent = json.data.totalUsers;
+          document.getElementById('stat-total-posts').textContent = json.data.totalPosts;
+          document.getElementById('stat-avg-posts').textContent = json.data.avgPostsPerUser;
+        }
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      }
+    }
+
+    // 3. Fetch Users List
+    async function loadUsers(search = '') {
+      try {
+        const url = search ? `${API_BASE}/users?search=${encodeURIComponent(search)}` : `${API_BASE}/users`;
+        const res = await fetch(url);
+        const json = await res.json();
+        
+        const tbody = document.getElementById('users-table-body');
+        if (!json.success || !json.data.items.length) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No users found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = json.data.items.map(user => `
+          <tr>
+            <td style="font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--text-muted);">${user.id.substring(0, 8)}...</td>
+            <td style="font-weight: 600; color: #fff;">${user.name || 'N/A'}</td>
+            <td>${user.email}</td>
+            <td><span class="role-badge ${user.role === 'ADMIN' ? 'role-admin' : 'role-user'}">${user.role}</span></td>
+            <td><i class="fa-solid fa-file-signature" style="color: var(--accent-cyan);"></i> ${user._count?.posts ?? 0}</td>
+            <td style="color: var(--text-muted);">${new Date(user.createdAt).toLocaleDateString()}</td>
+            <td>
+              <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="deleteUser('${user.id}')">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load users:', err);
+      }
+    }
+
+    // 4. Search Handler
+    function handleSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const query = document.getElementById('user-search').value.trim();
+        loadUsers(query);
+      }, 300);
+    }
+
+    // 5. Fetch Posts List
+    async function loadPosts() {
+      try {
+        const res = await fetch(`${API_BASE}/posts`);
+        const json = await res.json();
+        const tbody = document.getElementById('posts-table-body');
+
+        if (!json.success || !json.data.items.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No posts found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = json.data.items.map(post => `
+          <tr>
+            <td style="font-weight: 600; color: #fff;">${post.title}</td>
+            <td>${post.author?.name || post.author?.email || 'Unknown'}</td>
+            <td>
+              <span class="role-badge" style="${post.published ? 'background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);' : 'background: rgba(156, 163, 175, 0.15); color: var(--text-muted);'}">
+                ${post.published ? 'PUBLISHED' : 'DRAFT'}
+              </span>
+            </td>
+            <td style="color: var(--text-muted);">${new Date(post.createdAt).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load posts:', err);
+      }
+    }
+
+    // Modal Control
+    function openCreateUserModal() {
+      document.getElementById('create-modal').classList.add('open');
+    }
+
+    function closeCreateUserModal() {
+      document.getElementById('create-modal').classList.remove('open');
+      document.getElementById('create-user-form').reset();
+    }
+
+    // Create User Action
+    async function handleCreateUser(e) {
+      e.preventDefault();
+      const name = document.getElementById('user-name').value.trim();
+      const email = document.getElementById('user-email').value.trim();
+      const role = document.getElementById('user-role').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, role }),
+        });
+
+        const json = await res.json();
+        if (json.success) {
+          showToast(`User ${name} created successfully!`);
+          closeCreateUserModal();
+          loadUsers();
+          loadStats();
+        } else {
+          alert(`Error: ${json.message || 'Failed to create user'}`);
+        }
+      } catch (err) {
+        alert('Network error while creating user');
+      }
+    }
+
+    // Delete User Action
+    async function deleteUser(id) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/users/${id}`, {
+          method: 'DELETE',
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('User deleted and cache invalidated!');
+          loadUsers();
+          loadStats();
+        }
+      } catch (err) {
+        alert('Failed to delete user');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -38,6 +38,13 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get user statistics', description: 'Retrieves aggregated user and post metrics, cached in Redis for 5 minutes.' })
+  @ApiResponse({ status: 200, description: 'User statistics retrieved successfully.' })
+  getStats() {
+    return this.usersService.getStats();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID', description: 'Retrieves a single user with cached fallback in Redis.' })
   @ApiParam({ name: 'id', description: 'User UUID' })

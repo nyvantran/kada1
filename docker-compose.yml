@@ -1,10 +1,8 @@
 name: nest-backend-stack
 
 services:
-  # ==============================================
-  # NestJS Application API Service
-  # ==============================================
-  api:
+  # NestJS Application Service
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,27 +11,22 @@ services:
     ports:
       - "${PORT:-3000}:3000"
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      API_PREFIX: api/v1
-      SWAGGER_PATH: api/docs
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres123}@postgres:5432/${DB_NAME:-nest_db}?schema=public
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
-      REDIS_DB: 0
-      REDIS_TTL: 3600
+      - NODE_ENV=production
+      - PORT=3000
+      - API_PREFIX=api/v1
+      - SWAGGER_PATH=api/docs
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres123}@postgres:5432/${DB_NAME:-nest_db}?schema=public
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-redis123}
+      - REDIS_DB=0
+      - REDIS_TTL=3600
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - app_network
 
-  # ==============================================
-  # PostgreSQL Database Service
-  # ==============================================
   postgres:
     image: postgres:16-alpine
     container_name: nest_postgres

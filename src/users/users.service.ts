@@ -147,4 +147,41 @@ export class UsersService {
     this.logger.log(`Deleted user #${id} and invalidated cache`);
     return { success: true, message: `User with ID ${id} has been deleted.` };
   }
+
+  async getStats(): Promise<{
+    totalUsers: number;
+    totalPosts: number;
+    avgPostsPerUser: number;
+    latestUser: { id: string; email: string; name: string | null; createdAt: Date } | null;
+  }> {
+    const cacheKey = `${this.CACHE_PREFIX}:stats`;
+
+    const cached = await this.redis.get<any>(cacheKey);
+    if (cached) {
+      this.logger.log(`Returning users stats from Redis cache`);
+      return cached;
+    }
+
+    const [totalUsers, totalPosts, latestUser] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.post.count(),
+      this.prisma.user.findFirst({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, email: true, name: true, createdAt: true },
+      }),
+    ]);
+
+    const avgPostsPerUser = totalUsers > 0 ? parseFloat((totalPosts / totalUsers).toFixed(2)) : 0;
+
+    const stats = {
+      totalUsers,
+      totalPosts,
+      avgPostsPerUser,
+      latestUser,
+    };
+
+    await this.redis.set(cacheKey, stats, 300);
+
+    return stats;
+  }
 }
